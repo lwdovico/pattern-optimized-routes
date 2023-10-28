@@ -3,6 +3,7 @@ from sklearn.preprocessing import MinMaxScaler
 from skmob.tessellation.tilers import tiler
 
 import sys
+import os
 import geopandas as gpd
 import numpy as np
 from tqdm import tqdm
