@@ -1,3 +1,4 @@
+from routing_lib import *
 from shapely.geometry import Point, Polygon
 from sklearn.preprocessing import MinMaxScaler
 from skmob.tessellation.tilers import tiler
@@ -99,12 +100,13 @@ def normalize_eru(id_eru_dict):
 
     return id_eru_dict
 
-def get_source_kroad_dist(list_routes, edge_tile_dict, mds_threshold = 0.8, normalize = True):
+def get_source_kroad_dist(G, list_routes, edge_tile_dict, mds_threshold = 0.8, normalize = True):
     """
     Computes a k-road distribution, or the expected road usage in this context,
     with the provided paths and mapping of edges to tiles.
 
     Parameters:
+        G (Graph): The input graph.
         list_routes (list): List of routes.
         edge_tile_dict (dict): A dictionary mapping edge IDs to their corresponding tile IDs.
         mds_threshold (float, optional): Major Driver Sources threshold (default is 0.8).
@@ -195,7 +197,7 @@ def get_kroad_levels(G, k, attribute, edge_tile_dict, expected_vehicles,
 
                 pbar.update(1)
 
-        kroad_levels[n] = get_source_kroad_dist(list_routes, edge_tile_dict, mds_threshold = 0.8, normalize = normalize)
+        kroad_levels[n] = get_source_kroad_dist(G, list_routes, edge_tile_dict, mds_threshold = 0.8, normalize = normalize)
 
         # Reassign the weights according to the current expected road usage level
         for e in G.es:
