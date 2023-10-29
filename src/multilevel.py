@@ -208,11 +208,12 @@ def get_kroad_levels(G, k, attribute, edge_tile_dict, expected_vehicles,
 
     return kroad_levels
 
-def kroad_weight_update(edges, attribute, kroad_levels, lvl):
+def kroad_weight_update(G, edges, attribute, kroad_levels, lvl):
     """
     Update edge weights based on k-road level.
 
     Parameters:
+        G (Graph): The input graph.
         edges (list): List of edges to penalize (either of the Graph or of the Path).
         attribute (str): The attribute to update.
         kroad_levels (dict): A dictionary containing k-road levels and their associated road usage values.
@@ -225,7 +226,7 @@ def kroad_weight_update(edges, attribute, kroad_levels, lvl):
     if k_dist is not None:
         for e in edges:  # Iterate through the list of edges
             if e["id"] != "connection":  # Skip edges with ID 'connection'
-                idx = G["edge_sumo_ig"][e['id']]  # Get the corresponding index
+                idx = G["edge_sumo_ig"][e["id"]]  # Get the corresponding index
                 k_road = k_dist[idx]  # Get the k-road value for the edge
                 e[attribute] *= (1+k_road)  # Update the edge weight using the k-road value
 
@@ -256,7 +257,7 @@ def multilevel_edge_penalization(G, from_edge, to_edge, k, attribute, kroad_leve
 
     k_level = [1]  # Assigned to a list to allow modification by reference
 
-    kroad_weight_update(G.es, tmp_attribute, kroad_levels, k_level[0])  # Update Graph weights with 1st k-road level
+    kroad_weight_update(G, G.es, tmp_attribute, kroad_levels, k_level[0])  # Update Graph weights with 1st k-road level
 
     # Function called after a path is found
     def update_edges_weights(edge_list, attribute, p=0):
@@ -264,8 +265,8 @@ def multilevel_edge_penalization(G, from_edge, to_edge, k, attribute, kroad_leve
         Function called after a path is found,
         """
         k_level[0] += 1
-        kroad_weight_update(edge_list, attribute, kroad_levels, 1)  # Update path weights with 1st k-road level
-        kroad_weight_update(G.es, attribute, kroad_levels, k_level[0])  # Update Graph weights with next k-road level
+        kroad_weight_update(G, edge_list, attribute, kroad_levels, 1)  # Update path weights with 1st k-road level
+        kroad_weight_update(G, G.es, attribute, kroad_levels, k_level[0])  # Update Graph weights with next k-road level
 
     dict_args = {}  # Additional arguments (mandatory)
 
