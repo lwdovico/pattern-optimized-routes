@@ -328,6 +328,7 @@ class MultiLevelModel(object):
         fitted_vehicles (int): The number of fitted vehicles (selected during parameter selection).
         weights (dict): Model weights for edge penalization.
         tested_parameters (list): A list containing the balance-tested distributions during tuning.
+        algorithm_name (str): A tag containing 'MERU' as a string
 
     Methods:
         __init__: Initializes the MultiLevelModel.
@@ -359,11 +360,12 @@ class MultiLevelModel(object):
         self.G = G
         self.k = k
         self.attribute = attribute
+        self.algorithm_name = 'MERU'
 
         self.edge_tile_dict = get_edges_to_tile(G, 'squared', 1000)
 
         if params is None:
-            raise Exception('Must provide a dictionary with at least')
+            raise Exception('Must provide a dictionary with at least the "default_vehicles" value')
         else:
             assert type(params) is dict, "The parameters must be provided as a Dictionary"
             assert 'default_vehicles' in params, 'At least default_vehicles (int) must be provided as a parameter'
