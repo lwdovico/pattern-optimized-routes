@@ -20,6 +20,7 @@ def pipeline_test_reproducible_kdistributions(road_network_path, output_folder,
                                               k = 3, attribute = 'traveltime', 
                                               experiment_per_rs = 10, 
                                               random_state = 42, increase_rs_by = 3, 
+                                              distributions_to_test = None,
                                               sample = None):
   
     os.makedirs(output_folder, exist_ok=True)
@@ -49,6 +50,8 @@ def pipeline_test_reproducible_kdistributions(road_network_path, output_folder,
 
     all_distributions = [200, 500, 1000, 2000, 3500, 5000, 7000, 12000, 15000, 
                          17000, 20000, 30000, 50000, 75000, 100000, 200000]
+    if distributions_to_test is not None:
+        all_distributions = distributions_to_test
 
     path_results = {param : [] for param in all_distributions}
     ew_results = {param : [] for param in all_distributions}
