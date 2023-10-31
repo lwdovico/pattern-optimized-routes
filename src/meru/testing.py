@@ -5,16 +5,18 @@ from .simulate import save_sumo_routes
 from .simulate import simulate_sumo_paths
 from .simulate import save_results
 
+from routing_lib import from_sumo_to_igraph_network
+
 import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 
+import sumolib
 import json
-import pickle
-import sys
 import os
 
 def pipeline_test_reproducible_kdistributions(road_network_path, output_folder, 
+                                              mobility_demand_path, 
                                               k = 3, attribute = 'traveltime', 
                                               experiment_per_rs = 10, 
                                               random_state = 42, increase_rs_by = 3, 
@@ -25,7 +27,7 @@ def pipeline_test_reproducible_kdistributions(road_network_path, output_folder,
     road_network = sumolib.net.readNet(road_network_path, withInternal=False)
     G = from_sumo_to_igraph_network(road_network)
 
-    with open(f'{root}/pattern-optimized-routes/data/dict_mobility_demand_{chosen_city}.json', 'r') as f:
+    with open(mobility_demand_path, 'r') as f:
         mobility_demand = json.loads(f.read())
         # Get unique paths to predict (same OD pair)
         od_set = {tuple(mobility_demand[v]['edges']) for v in mobility_demand}
