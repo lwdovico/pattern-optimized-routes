@@ -1,7 +1,10 @@
+
 from routing_lib.routing_measures import div
 from routing_lib.routing_measures import redundancy
 from routing_lib.routing_measures import compute_temp_redundancy_sliding
 from routing_lib.routing_measures import get_load_balance_entropy
+
+from routing_lib import from_sumo_to_igraph_network
 
 from collections import Counter
 import matplotlib.pyplot as plt
@@ -116,12 +119,17 @@ def measure_diversity(G, result_paths, attribute):
 
     return diversity_results
 
-def get_resulting_paths_and_measures(G, mobility_demand, result_paths,
+def get_resulting_paths_and_measures(road_network, mobility_demand, result_paths,
                                      edge_weights,
                                      attribute = 'traveltime',
                                      algorithm_name = None,
                                      selection_criterion = None,
-                                     random_state = None):
+                                     random_state = None, G = None):
+
+
+    # INSTANTIATE GRAPH IF NOT PROVIDED (OPTIONAL BUT FASTER)
+    if G is None:
+        G = from_sumo_to_igraph_network(road_network)
 
     # INSTANTIATE SELECTION CRITERION
     if selection_criterion is None:
