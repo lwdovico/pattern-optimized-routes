@@ -5,6 +5,7 @@ from skmob.tessellation.tilers import tiler
 
 import sys
 import os
+import folium
 import geopandas as gpd
 import numpy as np
 from tqdm import tqdm
@@ -29,18 +30,15 @@ def make_gdf_from_geom(geom):
 
     return result_gdf
 
-def get_edges_to_tile(G, tile_shape = 'squared', tile_side_meters = 1000):
-
+def get_map_shape(G):
     """
-    Assign a tile to each edge.
+    Get the shape of the map.
 
     Parameters:
-        G (graph): The input iGraph road network
-        tile_shape (str): The shape of the tiles (available in skmob.tessellation.tilers, default is 'squared')
-        tile_side_meters (int): The side length in meters for a single tile (default is 1000)
+        G (Graph): The input graph.
 
     Returns:
-        edge_tile_dict (dict): A dictionary mapping edge IDs to their corresponding tile IDs.
+        Shape: The shape of the map.
     """
 
     from_array = np.array([x['from'] for x in G.es['coordinates']]) # Extract 'from' coordinates from edges
@@ -60,6 +58,26 @@ def get_edges_to_tile(G, tile_shape = 'squared', tile_side_meters = 1000):
 
     # Create a GeoDataFrame representing the city shape using the bounding box
     city_shape = make_gdf_from_geom([Polygon(map____coords)])
+
+    return city_shape
+
+def get_edges_to_tile(G, tile_shape = 'squared', tile_side_meters = 1000):
+    """
+    Assign a tile to each edge.
+
+    Parameters:
+        G (graph): The input iGraph road network
+        tile_shape (str): The shape of the tiles (available in skmob.tessellation.tilers, default is 'squared')
+        tile_side_meters (int): The side length in meters for a single tile (default is 1000)
+
+    Returns:
+        edge_tile_dict (dict): A dictionary mapping edge IDs to their corresponding tile IDs.
+    """
+
+    from_array = np.array([x['from'] for x in G.es['coordinates']]) # Extract 'from' coordinates from edges
+
+    # Create a GeoDataFrame representing the city shape
+    city_shape = get_map_shape(G)
 
     # Generate a tiling of the city shape based on the specified parameters
     kroad_tess = tiler.get(tile_shape, base_shape = city_shape, meters = tile_side_meters)
@@ -207,6 +225,36 @@ def get_kroad_levels(G, k, attribute, edge_tile_dict, expected_vehicles,
                 e[tmp_attribute] *= (1+k_road)
 
     return kroad_levels
+
+def get_kroad_maps(G, edges_weights, color = 'blue', tiles='cartodbpositron', zoom_start=13):
+    """
+    Generate maps showing the k-road value of each edge.
+
+    Parameters:
+        G (Graph): The input graph.
+        edges_weights (dict): Dict of edge weight
+        color (str, optional): The color for the map lines. Default is 'blue'.
+        tiles (str, optional): The type of tiles to use. Default is 'cartodbpositron'.
+        zoom_start (int, optional): The initial zoom level. Default is 13.
+
+    Returns:
+        list: A list of generated k-road maps.
+    """
+
+    city_shape = get_map_shape(G)
+
+    maps = []
+
+    for l in range(1, len(edges_weights) + 1):
+        m = folium.Map(location=tuple(reversed(city_shape.centroid[0].coords[0])), tiles=tiles, zoom_start=zoom_start)
+
+        for e in G.es: 
+            folium.PolyLine(locations=[tuple(reversed(coord)) for coord in (e['coordinates']['from'], e['coordinates']['to'])], 
+                            weigth=4, color=color, opacity=edges_weights[l][e.index]).add_to(m)
+
+        maps.append(m)
+
+    return maps
 
 def kroad_weight_update(G, edges, attribute, kroad_levels, lvl):
     """
