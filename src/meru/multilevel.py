@@ -432,6 +432,7 @@ class MultiLevelModel(object):
 
         """
 
+        self.algorithm_name = f'MERU{self.fitted_vehicles}'
         assert hasattr(self, 'fitted_vehicles'), "You must run parameter selection before fitting the weights!"
         self.weights = get_kroad_levels(self.G, self.k, self.attribute, self.edge_tile_dict, self.fitted_vehicles,
                                         verbose = verbose, random_state = random_state)
