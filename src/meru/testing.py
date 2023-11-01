@@ -170,24 +170,24 @@ def pipeline_test_reproducible_baselines(road_network_path, output_folder,
     # Generate and print the output for each algorithm and parameter set
     for algorithm_name, parameter_set in generate_parameter_combinations(algorithm_parameters):
 
+        algo_name_out = generate_output_string(algorithm_name, parameter_set)
+
+        model = BaselineModel(algorithm_name, G, k, attribute, 
+                              algo_name_out = algo_name_out, 
+                              compute_in_subgraph = False, **parameter_set)
+        
+        result_paths = dict()
+        for from_edge, to_edge in tqdm(od_set, desc="Paths Computed"):
+            result_paths[(from_edge, to_edge)] = model.predict(from_edge, to_edge)
+
         for exp in range(experiment_per_rs):
 
               if random_state is not None:
                   random_state = starting_random_state if exp == 0 else random_state * increase_rs_by
 
-              algo_name_out = generate_output_string(algorithm_name, parameter_set)
-
-              model = BaselineModel(algorithm_name, G, k, attribute, 
-                                    algo_name_out = algo_name_out, 
-                                    compute_in_subgraph = False, **parameter_set)
-              
               print('Algo_Param', algo_name_out, 'Test n°:', exp,
                     'Parameters selected:', meru_model.fitted_vehicles,
                     'Random state selected:', random_state)
-              
-              result_paths = dict()
-              for from_edge, to_edge in tqdm(od_set, desc="Paths Computed"):
-                  result_paths[(from_edge, to_edge)] = model.predict(from_edge, to_edge)
 
               paths_and_measures = get_resulting_paths_and_measures(road_network, mobility_demand, result_paths, edge_weights, attribute, model.algo_name_out,
                                                                     selection_criterion = np.random.choice, random_state = random_state, G = G)
