@@ -70,7 +70,7 @@ def pipeline_test_reproducible_kdistributions(road_network_path, output_folder,
               model.fit(random_state = random_state)
               
               result_paths = dict()
-              for from_edge, to_edge in tqdm(od_set, desc="Paths Computed"):
+              for from_edge, to_edge in tqdm(sorted(od_set), desc="Paths Computed"):
                   result_paths[(from_edge, to_edge)] = model.predict(from_edge, to_edge)
 
               edge_weights = model.weights[1]
@@ -159,11 +159,12 @@ def pipeline_test_reproducible_baselines(road_network_path, output_folder,
     path_results = {generate_output_string(*x) : [] for x in generate_parameter_combinations(algorithm_parameters)}
 
     if meru_model is None:
-        meru_model = MultiLevelModel(G, k, attribute)
+        meru_model = MultiLevelModel(G, 1, attribute)
         print('Performing parameter selection!')
         meru_model.parameter_selection(verbose = True, random_state = random_state)
-
-    edge_weights = meru_model.tested_parameters[-1][1][1]
+        edge_weights = meru_model.tested_parameters[-1][1][1]
+    else:
+        edge_weights = meru_model.weights[1]
 
     starting_random_state = random_state
 
@@ -174,10 +175,10 @@ def pipeline_test_reproducible_baselines(road_network_path, output_folder,
 
         model = BaselineModel(algorithm_name, G, k, attribute, 
                               algo_name_out = algo_name_out, 
-                              compute_in_subgraph = False, **parameter_set)
+                              **parameter_set)
         
         result_paths = dict()
-        for from_edge, to_edge in tqdm(od_set, desc="Paths Computed"):
+        for from_edge, to_edge in tqdm(sorted(od_set), desc="Paths Computed"):
             result_paths[(from_edge, to_edge)] = model.predict(from_edge, to_edge)
 
         for exp in range(experiment_per_rs):
