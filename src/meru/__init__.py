@@ -1,6 +1,6 @@
 """Package to simulate the MultilevelERU (Expected Road Usage) model and the literature baselines results on a road network with a traffic demand. Author: Ludovico Lemma"""
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 from .baselines import *
 from .multilevel import *

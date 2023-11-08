@@ -278,7 +278,7 @@ def kroad_weight_update(G, edges, attribute, kroad_levels, lvl):
                 k_road = k_dist[idx]  # Get the k-road value for the edge
                 e[attribute] *= (1+k_road)  # Update the edge weight using the k-road value
 
-def multilevel_edge_penalization(G, from_edge, to_edge, k, attribute, kroad_levels, all_distinct=True, remove_tmp_attribute=True, max_iter=1e3):
+def multilevel_edge_penalization(G, from_edge, to_edge, k, attribute, kroad_levels, multilevel = True, all_distinct=True, remove_tmp_attribute=True, max_iter=1e3):
     """
     Apply edge penalization with the multilevel based expected road usage
 
@@ -289,6 +289,7 @@ def multilevel_edge_penalization(G, from_edge, to_edge, k, attribute, kroad_leve
         k (int): The k desired number of paths to return.
         attribute (str): The attribute to be updated.
         kroad_levels (dict): A dictionary containing k-road levels and their associated road usage values.
+        multilevel (bool, optional): It set the solution to be multilevel otherwise the simple solution will be applied (default is True)
         all_distinct (bool, optional): Flag for finding all distinct shortest paths (default is True).
         remove_tmp_attribute (bool, optional): Flag to remove temporary attribute after processing (default is True).
         max_iter (int, optional): Maximum number of iterations for finding alternative paths (default is 1000).
@@ -314,7 +315,8 @@ def multilevel_edge_penalization(G, from_edge, to_edge, k, attribute, kroad_leve
         """
         k_level[0] += 1
         kroad_weight_update(G, edge_list, attribute, kroad_levels, 1)  # Update path weights with 1st k-road level
-        kroad_weight_update(G, G.es, attribute, kroad_levels, k_level[0])  # Update Graph weights with next k-road level
+        if multilevel:
+            kroad_weight_update(G, G.es, attribute, kroad_levels, k_level[0])  # Update Graph weights with next k-road level
 
     dict_args = {}  # Additional arguments (mandatory)
 
@@ -485,14 +487,15 @@ class MultiLevelModel(object):
         self.weights = get_kroad_levels(self.G, self.k, self.attribute, self.edge_tile_dict, self.fitted_vehicles,
                                         verbose = verbose, random_state = random_state)
 
-    def predict(self, from_edge, to_edge, k = None):
+    def predict(self, from_edge, to_edge, k = None, multilevel = True):
         """
         Predicts the "least popular" paths between two edges.
 
         Parameters:
             from_edge (Edge or str): The starting edge (or its ID).
             to_edge (Edge or str): The target edge (or its ID).
-            k (int, optional): The k-road level to use for penalization.
+            k (int, optional): The actual number of output paths (it should differ only with the simple solution)
+            multilevel (bool, optional): If the multilevel solution should be applied, otherwise it apply a simple one (default is True)
 
         Returns:
             dict: Dictionary containing the "least popular" paths information.
@@ -507,4 +510,4 @@ class MultiLevelModel(object):
         else:
             k = self.k
 
-        return multilevel_edge_penalization(self.G, from_edge, to_edge, k, self.attribute, self.weights, max_iter=5)
+        return multilevel_edge_penalization(self.G, from_edge, to_edge, k, self.attribute, self.weights, multilevel = multilevel, max_iter=5)
