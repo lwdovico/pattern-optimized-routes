@@ -30,7 +30,7 @@ class BaselineModel(object):
 
     def __init__(self, algorithm_name, G, k, attribute, **kwargs):
         """
-        Initializes one of these algorithms: PP, GR, PR, DR, KD, NR, KMMD, KML, KMO, PLAT and KSP
+        Initializes one of these algorithms: PP, GR, PR, DR, KD, NR, KMD, KML, KMO, PLAT and KSP
 
         Parameters:
             algorithm_name (str) : The name of the algorithm to apply
